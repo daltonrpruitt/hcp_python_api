@@ -1,5 +1,6 @@
 import requests
 import os
+import json
 
 def main():
     try:
@@ -19,6 +20,18 @@ def main():
         'Authorization': f'Bearer {HCP_API_KEY}',
         'Content-Type': 'application/json'
     }
+    
+    BASE_URL = 'https://api.housecallpro.com/'
+
+    response = requests.get(f'{BASE_URL}/jobs', headers=headers)
+    if response.status_code == 200:
+        jobs = response.json()
+        filepath = "tmp.json"
+        with open(filepath, "w") as f:
+            json.dump(jobs, f)
+        print(jobs["jobs"][:5])
+    else:
+        print(f"Error: {response.status_code}")
 
 
 if __name__ == "__main__":
