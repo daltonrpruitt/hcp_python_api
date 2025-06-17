@@ -14,7 +14,7 @@ def main():
         e.add_note("in Bash.")
         raise 
 
-    assert(len(HCP_API_KEY) == 32, "API Key is wrong length!")
+    assert len(HCP_API_KEY) == 32, "API Key is wrong length!"
     
     headers = {
         'Authorization': f'Bearer {HCP_API_KEY}',
