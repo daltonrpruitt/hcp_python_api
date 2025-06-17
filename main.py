@@ -23,13 +23,23 @@ def main():
     
     BASE_URL = 'https://api.housecallpro.com/'
 
-    response = requests.get(f'{BASE_URL}/jobs', headers=headers)
+    url = f'{BASE_URL}/events'
+    
+    # all_jobs = []
+    # while url:
+    #     response = requests.get(url, headers=headers)
+    #     data = response.json()
+    #     all_jobs.extend(data['jobs'])
+    #     url = data.get('next_page_url')
+    querystring = {"scheduled_start_min":"2025-06-06","scheduled_end_max":"2025-06-13"}
+
+    response = requests.get(url, headers=headers, params=querystring)
     if response.status_code == 200:
-        jobs = response.json()
-        filepath = "tmp.json"
+        events = response.json()
+        filepath = "hidden_events.json"
         with open(filepath, "w") as f:
-            json.dump(jobs, f)
-        print(jobs["jobs"][:5])
+            json.dump(events, f)
+        print(events["events"][:5])
     else:
         print(f"Error: {response.status_code}")
 
