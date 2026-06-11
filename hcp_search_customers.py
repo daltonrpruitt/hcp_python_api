@@ -153,7 +153,7 @@ def format_customer(customer: dict, matches: list[str]) -> str:
     if notes:
         lines.append(f"  Notes:      {notes[:120]}{'…' if len(notes) > 120 else ''}")
 
-    lines.append(f"  Matched on: {', '.join(matches) if matches else '(returned by API query)'}")
+    lines.append(f"  Matched on: {', '.join(matches) if matches else '(returned by API query - matched some string)'}")
     return "\n".join(lines)
 
 
