@@ -35,7 +35,7 @@ import requests
 
 # ── Config ───────────────────────────────────────────────────────────────────
 API_BASE         = "https://api.housecallpro.com"
-HCP_CUSTOMER_URL = "https://pro.housecallpro.com/customers/{customer_id}"
+HCP_CUSTOMER_URL = "https://pro.housecallpro.com/app/customers/{customer_id}"
 
 
 # ── Exceptions ───────────────────────────────────────────────────────────────
