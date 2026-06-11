@@ -370,3 +370,9 @@ if __name__ == "__main__":
 # block, so we call run() here and assign to `output` which Zapier reads back.
 else:
     output = run(get_inputs())  # noqa: F821  (inputData injected by Zapier)
+    matches_string = ""
+    print("Found " + str(output["match_count"]) + " customer(s):\n")
+    for match in output["matches"]:
+        matches_string += format_customer(match) + "\n"
+
+    output["matches_string"] = matches_string
