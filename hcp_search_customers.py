@@ -69,12 +69,12 @@ def normalize_phone(phone: str) -> str:
     return "".join(ch for ch in phone if ch.isdigit())
 
 
-def detect_matches(customer: dict, args: argparse.Namespace) -> list[str]:
+def detect_matches(customer: dict, args: argparse.Namespace) -> dict[str, str]:
     """
     Return a list of human-readable strings describing which search fields
     matched this customer record.
     """
-    matches = []
+    matches = {}
 
     first = (customer.get("first_name") or "").lower()
     last  = (customer.get("last_name")  or "").lower()
@@ -83,19 +83,19 @@ def detect_matches(customer: dict, args: argparse.Namespace) -> list[str]:
     if args.name:
         needle = args.name.lower()
         if needle in full or needle in first or needle in last:
-            matches.append(f"name → '{args.name}'")
+            matches["name"] = args.name
 
     if args.email:
         cust_email = (customer.get("email") or "").lower()
         if args.email.lower() in cust_email:
-            matches.append(f"email → '{args.email}'")
+            matches["email"] = args.email
 
     if args.phone:
         needle_digits = normalize_phone(args.phone)
         for ph_field in ["mobile_number", "home_number", "work_number"]:
             raw = customer.get(ph_field) or ""
             if needle_digits and needle_digits in normalize_phone(raw):
-                matches.append(f"phone ({ph_field}) → '{args.phone}'")
+                matches[f"phone_{ph_field}"] = args.phone
 
     if args.address:
         needle = args.address.lower()
@@ -106,7 +106,7 @@ def detect_matches(customer: dict, args: argparse.Namespace) -> list[str]:
             zip_   = (addr.get("zip")    or "").lower()
             full_addr = f"{street} {city} {state} {zip_}".strip()
             if needle in full_addr:
-                matches.append(f"address → '{args.address}'")
+                matches["address"] = args.address
                 break  # one match per customer is enough
 
     return matches
