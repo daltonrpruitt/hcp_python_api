@@ -127,7 +127,7 @@ def resolve_api_key(inputs: dict) -> str:
 
 def build_headers(api_key: str) -> dict:
     return {
-        "Authorization": f"Token {api_key}",
+        "Authorization": "Token "+api_key,
         "Content-Type": "application/json",
     }
 
@@ -140,7 +140,7 @@ def search_customers(query: str, api_key: str) -> list[dict]:
 
     while True:
         resp = requests.get(
-            f"{API_BASE}/customers",
+            API_BASE+"/customers",
             headers=build_headers(api_key),
             params={"q": query, "page": page, "page_size": page_size},
             timeout=15,
@@ -149,7 +149,7 @@ def search_customers(query: str, api_key: str) -> list[dict]:
         if resp.status_code == 401:
             raise HCPError("Authentication failed — check your HCP API key.")
         if not resp.ok:
-            raise HCPError(f"API error {resp.status_code}: {resp.text}")
+            raise HCPError("API error "+resp.status_code+": "+resp.text)
 
         data = resp.json()
         batch = data.get("customers", data) if isinstance(data, dict) else data
@@ -180,7 +180,7 @@ def detect_matches(customer: dict, inputs: dict) -> dict[str, str]:
 
     first = (customer.get("first_name") or "").lower()
     last = (customer.get("last_name") or "").lower()
-    full = f"{first} {last}".strip()
+    full = (first+" "+last).strip()
 
     name = inputs.get("name")
     if name:
@@ -200,7 +200,7 @@ def detect_matches(customer: dict, inputs: dict) -> dict[str, str]:
         for ph_field in ["mobile_number", "home_number", "work_number"]:
             raw = customer.get(ph_field) or ""
             if needle_digits and needle_digits in normalize_phone(raw):
-                matches[f"phone_{ph_field}"] = phone
+                matches["phone_"+ph_field] = phone
 
     address = inputs.get("address")
     if address:
@@ -210,7 +210,7 @@ def detect_matches(customer: dict, inputs: dict) -> dict[str, str]:
             city = (addr.get("city") or "").lower()
             state = (addr.get("state") or "").lower()
             zip_ = (addr.get("zip") or "").lower()
-            full_addr = f"{street} {city} {state} {zip_}".strip()
+            full_addr = (street+" "+city+" "+state+" "+zip_).strip()
             if needle in full_addr:
                 matches["address"] = address
                 break
@@ -249,7 +249,7 @@ def run(inputs: dict) -> dict:
         results: list = []
 
         for term in search_terms:
-            print(f"🔍  Searching HCP for: '{term}' …", file=sys.stderr)
+            print("🔍  Searching HCP for: "+term+" …", file=sys.stderr)
             customers = search_customers(term, api_key)
             for customer in customers:
                 cid = customer.get("id")
@@ -272,7 +272,7 @@ def run(inputs: dict) -> dict:
     except HCPError as exc:
         output["error"] = str(exc)
     except Exception as exc:  # unexpected errors
-        output["error"] = f"Unexpected error: {exc}"
+        output["error"] = "Unexpected error: "+exc
 
     return output
 
@@ -306,27 +306,27 @@ def format_customer(match: dict) -> str:
 
     lines = [
         "─" * 60,
-        f"  Customer:   {first} {last}".rstrip(),
-        f"  ID:         {cid}",
-        f"  HCP URL:    {match['hcp_url']}",
-        f"  Email:      {email}",
-        f"  Mobile:     {mobile}",
-        f"  Home:       {home}",
-        f"  Work:       {work}",
+        "  Customer:   "+(first+ " "+last).rstrip(),
+        "  ID:         "+cid,
+        "  HCP URL:    "+match['hcp_url'],
+        "  Email:      "+str(email),
+        "  Mobile:     "+str(mobile),
+        "  Home:       "+str(home),
+        "  Work:       "+str(work),
     ]
     if addr_lines:
         lines.append("  Addresses:")
         for a in addr_lines:
-            lines.append(f"              {a}")
+            lines.append("              "+a)
     if notes:
-        lines.append(f"  Notes:      {notes[:120]}{'…' if len(notes) > 120 else ''}")
+        lines.append("  Notes:      "+notes[:120]+('…' if len(notes) > 120 else ''))
 
     matched_str = (
-        ", ".join(f"{k}='{v}'" for k, v in matches.items())
+        ", ".join(k+"='"+v+"'" for k, v in matches.items())
         if matches
         else "(returned by API query)"
     )
-    lines.append(f"  Matched on: {matched_str}")
+    lines.append("  Matched on: "+matched_str)
     return "\n".join(lines)
 
 
@@ -345,7 +345,7 @@ if __name__ == "__main__":
     result = run(inputs)
 
     if result["error"]:
-        print(f"❌  {result['error']}", file=sys.stderr)
+        print("❌  "+result['error'], file=sys.stderr)
         sys.exit(1)
 
     matches = json.loads(result["matches"])
@@ -356,11 +356,11 @@ if __name__ == "__main__":
 
     if inputs.get("as_json"):
         print(
-            f"\n✅  Found {result['match_count']} customer(s) (JSON)\n", file=sys.stderr
+            "\n✅  Found "+str(result['match_count'])+" customer(s) (JSON)\n", file=sys.stderr
         )
         print(json.dumps(matches, indent=2))
     else:
-        print(f"\n✅  Found {result['match_count']} customer(s):\n")
+        print("\n✅  Found "+str(result['match_count'])+" customer(s):\n")
         for match in matches:
             print(format_customer(match))
         print("─" * 60)
