@@ -198,9 +198,9 @@ def main():
         print("No customers found matching your search criteria.")
         return
 
-    print(f"\n✅  Found {len(results)} customer(s):\n")
 
     if args.json:
+        print(f"\n✅  Found {len(results)} customer(s) (print as JSON)\n", file=sys.stderr)
         output = []
         for customer, matches in results:
             output.append({
@@ -211,6 +211,7 @@ def main():
             })
         print(json.dumps(output, indent=2))
     else:
+        print(f"\n✅  Found {len(results)} customer(s):\n")
         for customer, matches in results:
             print(format_customer(customer, matches))
         print("─" * 60)
