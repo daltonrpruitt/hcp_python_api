@@ -58,16 +58,19 @@ def get_inputs() -> dict:
     """
     # ── Zapier path ──────────────────────────────────────────────────────────
     # Zapier injects `inputData` as a global before running the script.
-    if "inputData" in globals() and isinstance(inputData, dict):  # noqa: F821
-        d = inputData  # noqa: F821
-        return {
-            "name": d.get("name") or None,
-            "email": d.get("email") or None,
-            "phone": d.get("phone") or None,
-            "address": d.get("address") or None,
-            "api_key": d.get("api_key") or None,
-            "as_json": False,  # not relevant in Zapier context
-        }
+    try:
+        if inputData is not None and isinstance(inputData, dict):  # noqa: F821
+            d = inputData  # noqa: F821
+            return {
+                "name": d.get("name") or None,
+                "email": d.get("email") or None,
+                "phone": d.get("phone") or None,
+                "address": d.get("address") or None,
+                "api_key": d.get("api_key") or None,
+                "as_json": False,  # not relevant in Zapier context
+            }
+    except NameError as e:
+        print("inputData not available; must be running in script", sys.stderr)
 
     # ── CLI path ─────────────────────────────────────────────────────────────
     parser = argparse.ArgumentParser(
